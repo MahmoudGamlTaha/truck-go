@@ -1,0 +1,561 @@
+
+
+ CREATE TABLE IF NOT EXISTS companies (
+    id BIGSERIAL PRIMARY KEY,
+     name VARCHAR(255) NOT NULL,
+     address TEXT,
+     phone VARCHAR(50),
+     email VARCHAR(255),
+     license VARCHAR(100) UNIQUE NOT NULL,
+     is_active BOOLEAN DEFAULT true,
+     created_at TIMESTAMPTZ DEFAULT NOW(),
+     updated_at TIMESTAMPTZ DEFAULT NOW(),
+     deleted_at TIMESTAMPTZ
+ );
+ 
+ -- =====================================================
+ -- 2. USERS TABLE (Authentication & Authorization)
+ -- =====================================================
+ CREATE TABLE IF NOT EXISTS users (
+    id BIGSERIAL PRIMARY KEY,
+     email VARCHAR(255) UNIQUE NOT NULL,
+     password_hash VARCHAR(255) NOT NULL,
+     first_name VARCHAR(100) NOT NULL,
+     last_name VARCHAR(100) NOT NULL,
+     role VARCHAR(20) DEFAULT 'driver' CHECK (role IN ('admin', 'assignee', 'driver')),
+    company_id BIGINT REFERENCES companies(id) ON DELETE CASCADE,
+    branch_id BIGINT,
+    truck_id BIGINT,
+     is_active BOOLEAN DEFAULT true,
+     created_at TIMESTAMPTZ DEFAULT NOW(),
+     updated_at TIMESTAMPTZ DEFAULT NOW(),
+     deleted_at TIMESTAMPTZ
+ );
+ 
+ -- =====================================================
+ -- 3. BRANCHES TABLE (Company branches)
+ -- =====================================================
+ CREATE TABLE IF NOT EXISTS branches (
+    id BIGSERIAL PRIMARY KEY,
+    company_id BIGINT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+     name VARCHAR(255) NOT NULL,
+     address TEXT,
+     phone VARCHAR(50),
+     email VARCHAR(255),
+    manager_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+     is_active BOOLEAN DEFAULT true,
+     created_at TIMESTAMPTZ DEFAULT NOW(),
+     updated_at TIMESTAMPTZ DEFAULT NOW(),
+     deleted_at TIMESTAMPTZ
+ );
+ 
+ -- =====================================================
+ -- 4. TRUCKS TABLE (Fleet management)
+ -- =====================================================
+ CREATE TABLE IF NOT EXISTS trucks (  
+    id BIGSERIAL PRIMARY KEY,
+    company_id BIGINT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    branch_id BIGINT REFERENCES branches(id) ON DELETE SET NULL,
+     license_plate VARCHAR(20) UNIQUE NOT NULL,
+     model VARCHAR(100) NOT NULL,
+     year INTEGER,
+     color VARCHAR(50),
+     status VARCHAR(20) DEFAULT 'offline' CHECK (status IN ('online', 'offline', 'in_use', 'maintenance')),
+    driver_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+     is_approved BOOLEAN DEFAULT false,
+    approved_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
+     approved_at TIMESTAMPTZ,
+     is_active BOOLEAN DEFAULT true,
+     created_at TIMESTAMPTZ DEFAULT NOW(),
+     updated_at TIMESTAMPTZ DEFAULT NOW(),
+     deleted_at TIMESTAMPTZ
+ );
+ 
+ -- =====================================================
+ -- 5. TRUCK LOCATIONS TABLE (Real-time GPS tracking)
+ -- =====================================================
+ CREATE TABLE IF NOT EXISTS truck_locations (
+    id BIGSERIAL PRIMARY KEY,
+    truck_id BIGINT NOT NULL REFERENCES trucks(id) ON DELETE CASCADE,
+     latitude DECIMAL(10, 8) NOT NULL,
+     longitude DECIMAL(11, 8) NOT NULL,
+     speed DECIMAL(5, 2) DEFAULT 0,
+     heading DECIMAL(5, 2) DEFAULT 0,
+     timestamp TIMESTAMPTZ DEFAULT NOW(),
+     created_at TIMESTAMPTZ DEFAULT NOW()
+ );
+ 
+ -- =====================================================
+ -- 6. ROUTES TABLE (Route planning)
+ -- =====================================================
+ CREATE TABLE IF NOT EXISTS routes (
+    id BIGSERIAL PRIMARY KEY,
+    company_id BIGINT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    branch_id BIGINT REFERENCES branches(id) ON DELETE SET NULL,
+    truck_id BIGINT REFERENCES trucks(id) ON DELETE SET NULL,
+    driver_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+     name VARCHAR(255) NOT NULL,
+     description TEXT,
+     status VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'completed', 'cancelled')),
+     start_time TIMESTAMPTZ,
+     end_time TIMESTAMPTZ,
+    created_by BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    approved_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
+     approved_at TIMESTAMPTZ,
+     created_at TIMESTAMPTZ DEFAULT NOW(),
+     updated_at TIMESTAMPTZ DEFAULT NOW(),
+     deleted_at TIMESTAMPTZ
+ );
+ 
+ -- =====================================================
+ -- 7. ROUTE STOPS TABLE (Route stop details)
+ -- =====================================================
+ CREATE TABLE IF NOT EXISTS route_stops (
+    id BIGSERIAL PRIMARY KEY,
+    route_id BIGINT NOT NULL REFERENCES routes(id) ON DELETE CASCADE,
+     stop_order INTEGER NOT NULL,
+     address TEXT NOT NULL,
+     latitude DECIMAL(10, 8),
+     longitude DECIMAL(11, 8),
+     contact_name VARCHAR(255),
+     contact_phone VARCHAR(50),
+     instructions TEXT,
+     estimated_arrival TIMESTAMPTZ,
+     actual_arrival TIMESTAMPTZ,
+     is_completed BOOLEAN DEFAULT false,
+     completed_at TIMESTAMPTZ,
+     notes TEXT,
+     created_at TIMESTAMPTZ DEFAULT NOW(),
+     updated_at TIMESTAMPTZ DEFAULT NOW(),
+     deleted_at TIMESTAMPTZ
+ );
+ 
+ -- =====================================================
+ -- 8. VISITS TABLE (Customer visits)
+ -- =====================================================
+ CREATE TABLE IF NOT EXISTS visits (
+    id BIGSERIAL PRIMARY KEY,
+    company_id BIGINT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    truck_id BIGINT NOT NULL REFERENCES trucks(id) ON DELETE CASCADE,
+    driver_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+     customer_name VARCHAR(255) NOT NULL,
+     address TEXT NOT NULL,
+     latitude DECIMAL(10, 8),
+     longitude DECIMAL(11, 8),
+     status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed', 'cancelled')),
+     start_time TIMESTAMPTZ,
+     end_time TIMESTAMPTZ,
+     notes TEXT,
+     created_at TIMESTAMPTZ DEFAULT NOW(),
+     updated_at TIMESTAMPTZ DEFAULT NOW(),
+     deleted_at TIMESTAMPTZ
+ );
+ 
+ -- =====================================================
+ -- 9. TASKS TABLE (Tasks during visits)
+ -- =====================================================
+ CREATE TABLE IF NOT EXISTS tasks (
+    id BIGSERIAL PRIMARY KEY,
+    visit_id BIGINT NOT NULL REFERENCES visits(id) ON DELETE CASCADE,
+     title VARCHAR(255) NOT NULL,
+     description TEXT,
+     is_completed BOOLEAN DEFAULT false,
+     completed_at TIMESTAMPTZ,
+     created_at TIMESTAMPTZ DEFAULT NOW(),
+     updated_at TIMESTAMPTZ DEFAULT NOW(),
+     deleted_at TIMESTAMPTZ
+ );
+ 
+ -- =====================================================
+ -- 10. REQUESTS TABLE (Request approval system)
+ -- =====================================================
+ CREATE TABLE IF NOT EXISTS requests (
+    id BIGSERIAL PRIMARY KEY,
+    company_id BIGINT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    truck_id BIGINT REFERENCES trucks(id) ON DELETE SET NULL,
+     type VARCHAR(30) NOT NULL CHECK (type IN ('truck_assignment', 'maintenance', 'leave', 'other')),
+     status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'terminated')),
+     title VARCHAR(255) NOT NULL,
+     description TEXT,
+    accepted_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
+     accepted_at TIMESTAMPTZ,
+   terminated_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
+     terminated_at TIMESTAMPTZ,
+     termination_reason TEXT,
+     created_at TIMESTAMPTZ DEFAULT NOW(),
+     updated_at TIMESTAMPTZ DEFAULT NOW(),
+     deleted_at TIMESTAMPTZ
+ );
+ 
+ -- =====================================================
+ -- 11. CARGO TABLE (Cargo management)
+ -- =====================================================
+ CREATE TABLE IF NOT EXISTS cargo (
+    id BIGSERIAL PRIMARY KEY,
+    company_id BIGINT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    truck_id BIGINT REFERENCES trucks(id) ON DELETE SET NULL,
+     tracking_number VARCHAR(50) UNIQUE NOT NULL,
+     title VARCHAR(255) NOT NULL,
+     description TEXT,
+     type VARCHAR(20) DEFAULT 'general' CHECK (type IN ('general', 'fragile', 'hazardous', 'perishable', 'liquid', 'oversized')),
+     priority VARCHAR(10) DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
+     status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'assigned', 'in_transit', 'delivered', 'cancelled')),
+     weight DECIMAL(10, 2),
+     volume DECIMAL(10, 2),
+     value DECIMAL(12, 2),
+     currency VARCHAR(3) DEFAULT 'USD',
+     
+     -- Origin details
+     origin_address TEXT NOT NULL,
+     origin_latitude DECIMAL(10, 8),
+     origin_longitude DECIMAL(11, 8),
+     origin_contact VARCHAR(255),
+     origin_phone VARCHAR(50),
+     
+     -- Destination details
+     destination_address TEXT NOT NULL,
+     destination_latitude DECIMAL(10, 8),
+     destination_longitude DECIMAL(11, 8),
+     destination_contact VARCHAR(255),
+     destination_phone VARCHAR(50),
+     
+     -- Timing
+     pickup_time TIMESTAMPTZ,
+     delivery_time TIMESTAMPTZ,
+     estimated_delivery TIMESTAMPTZ,
+     actual_pickup TIMESTAMPTZ,
+     actual_delivery TIMESTAMPTZ,
+     
+     -- Assignment details
+    assigned_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
+     assigned_at TIMESTAMPTZ,
+     
+     -- Special instructions
+     instructions TEXT,
+     special_handling BOOLEAN DEFAULT false,
+     
+     -- Real-time tracking
+     current_latitude DECIMAL(10, 8),
+     current_longitude DECIMAL(11, 8),
+     current_location TEXT,
+     last_updated TIMESTAMPTZ,
+     
+     created_at TIMESTAMPTZ DEFAULT NOW(),
+     updated_at TIMESTAMPTZ DEFAULT NOW(),
+     deleted_at TIMESTAMPTZ
+ );
+ 
+ -- =====================================================
+ -- 12. CARGO EVENTS TABLE (Cargo tracking events)
+ -- =====================================================
+ CREATE TABLE IF NOT EXISTS cargo_events (
+    id BIGSERIAL PRIMARY KEY,
+    cargo_id BIGINT NOT NULL REFERENCES cargo(id) ON DELETE CASCADE,
+     event_type VARCHAR(30) NOT NULL,
+     description TEXT,
+     location TEXT,
+     latitude DECIMAL(10, 8),
+     longitude DECIMAL(11, 8),
+    user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+     timestamp TIMESTAMPTZ DEFAULT NOW(),
+     created_at TIMESTAMPTZ DEFAULT NOW(),
+     deleted_at TIMESTAMPTZ
+ );
+ 
+ -- =====================================================
+ -- ADD FOREIGN KEY CONSTRAINTS
+ -- =====================================================
+ 
+ -- Add foreign key constraints that reference tables created later
+ ALTER TABLE users ADD CONSTRAINT fk_users_branch_id 
+   FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE SET NULL;
+    FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE SET NULL;
+ 
+ ALTER TABLE users ADD CONSTRAINT fk_users_truck_id 
+   FOREIGN KEY (truck_id) REFERENCES trucks(id) ON DELETE SET NULL;
+    FOREIGN KEY (truck_id) REFERENCES trucks(id) ON DELETE SET NULL;
+ 
+ -- =====================================================
+ -- INDEXES FOR PERFORMANCE
+ -- =====================================================
+ 
+ -- Companies indexes
+ CREATE INDEX IF NOT EXISTS idx_companies_license ON companies(license);
+ CREATE INDEX IF NOT EXISTS idx_companies_active ON companies(is_active);
+ 
+ -- Users indexes
+ CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+ CREATE INDEX IF NOT EXISTS idx_users_company_id ON users(company_id);
+ CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+ CREATE INDEX IF NOT EXISTS idx_users_branch_id ON users(branch_id);
+ CREATE INDEX IF NOT EXISTS idx_users_truck_id ON users(truck_id);
+ CREATE INDEX IF NOT EXISTS idx_users_active ON users(is_active);
+ 
+ -- Branches indexes
+ CREATE INDEX IF NOT EXISTS idx_branches_company_id ON branches(company_id);
+ CREATE INDEX IF NOT EXISTS idx_branches_manager_id ON branches(manager_id);
+ CREATE INDEX IF NOT EXISTS idx_branches_active ON branches(is_active);
+ 
+ -- Trucks indexes
+ CREATE INDEX IF NOT EXISTS idx_trucks_company_id ON trucks(company_id);
+ CREATE INDEX IF NOT EXISTS idx_trucks_branch_id ON trucks(branch_id);
+ CREATE INDEX IF NOT EXISTS idx_trucks_driver_id ON trucks(driver_id);
+ CREATE INDEX IF NOT EXISTS idx_trucks_license_plate ON trucks(license_plate);
+ CREATE INDEX IF NOT EXISTS idx_trucks_status ON trucks(status);
+ CREATE INDEX IF NOT EXISTS idx_trucks_approved ON trucks(is_approved);
+ CREATE INDEX IF NOT EXISTS idx_trucks_active ON trucks(is_active);
+ 
+ -- Truck locations indexes
+ CREATE INDEX IF NOT EXISTS idx_truck_locations_truck_id ON truck_locations(truck_id);
+ CREATE INDEX IF NOT EXISTS idx_truck_locations_timestamp ON truck_locations(timestamp DESC);
+ CREATE INDEX IF NOT EXISTS idx_truck_locations_coordinates ON truck_locations(latitude, longitude);
+ 
+ -- Routes indexes
+ CREATE INDEX IF NOT EXISTS idx_routes_company_id ON routes(company_id);
+ CREATE INDEX IF NOT EXISTS idx_routes_truck_id ON routes(truck_id);
+ CREATE INDEX IF NOT EXISTS idx_routes_driver_id ON routes(driver_id);
+ CREATE INDEX IF NOT EXISTS idx_routes_status ON routes(status);
+ CREATE INDEX IF NOT EXISTS idx_routes_created_by ON routes(created_by);
+ 
+ -- Route stops indexes
+ CREATE INDEX IF NOT EXISTS idx_route_stops_route_id ON route_stops(route_id);
+ CREATE INDEX IF NOT EXISTS idx_route_stops_order ON route_stops(route_id, stop_order);
+ CREATE INDEX IF NOT EXISTS idx_route_stops_completed ON route_stops(is_completed);
+ 
+ -- Visits indexes
+ CREATE INDEX IF NOT EXISTS idx_visits_company_id ON visits(company_id);
+ CREATE INDEX IF NOT EXISTS idx_visits_truck_id ON visits(truck_id);
+ CREATE INDEX IF NOT EXISTS idx_visits_driver_id ON visits(driver_id);
+ CREATE INDEX IF NOT EXISTS idx_visits_status ON visits(status);
+ CREATE INDEX IF NOT EXISTS idx_visits_date ON visits(created_at DESC);
+ 
+ -- Tasks indexes
+ CREATE INDEX IF NOT EXISTS idx_tasks_visit_id ON tasks(visit_id);
+ CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(is_completed);
+ 
+ -- Requests indexes
+ CREATE INDEX IF NOT EXISTS idx_requests_company_id ON requests(company_id);
+ CREATE INDEX IF NOT EXISTS idx_requests_user_id ON requests(user_id);
+ CREATE INDEX IF NOT EXISTS idx_requests_status ON requests(status);
+ CREATE INDEX IF NOT EXISTS idx_requests_type ON requests(type);
+ 
+ -- Cargo indexes
+ CREATE INDEX IF NOT EXISTS idx_cargo_company_id ON cargo(company_id);
+ CREATE INDEX IF NOT EXISTS idx_cargo_truck_id ON cargo(truck_id);
+ CREATE INDEX IF NOT EXISTS idx_cargo_tracking_number ON cargo(tracking_number);
+ CREATE INDEX IF NOT EXISTS idx_cargo_status ON cargo(status);
+ CREATE INDEX IF NOT EXISTS idx_cargo_type ON cargo(type);
+ CREATE INDEX IF NOT EXISTS idx_cargo_priority ON cargo(priority);
+ CREATE INDEX IF NOT EXISTS idx_cargo_assigned_by ON cargo(assigned_by);
+ CREATE INDEX IF NOT EXISTS idx_cargo_current_location ON cargo(current_latitude, current_longitude);
+ 
+ -- Full-text search index for cargo
+ CREATE INDEX IF NOT EXISTS idx_cargo_search ON cargo USING gin(to_tsvector('english', title || ' ' || COALESCE(description, '') || ' ' || tracking_number));
+ 
+ -- Cargo events indexes
+ CREATE INDEX IF NOT EXISTS idx_cargo_events_cargo_id ON cargo_events(cargo_id);
+ CREATE INDEX IF NOT EXISTS idx_cargo_events_timestamp ON cargo_events(timestamp DESC);
+ CREATE INDEX IF NOT EXISTS idx_cargo_events_type ON cargo_events(event_type);
+ CREATE INDEX IF NOT EXISTS idx_cargo_events_user_id ON cargo_events(user_id);
+ 
+ -- =====================================================
+ -- ROW LEVEL SECURITY (RLS) POLICIES
+ -- =====================================================
+ 
+ -- Enable RLS on all tables
+ ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
+ ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ ALTER TABLE branches ENABLE ROW LEVEL SECURITY;
+ ALTER TABLE trucks ENABLE ROW LEVEL SECURITY;
+ ALTER TABLE truck_locations ENABLE ROW LEVEL SECURITY;
+ ALTER TABLE routes ENABLE ROW LEVEL SECURITY;
+ ALTER TABLE route_stops ENABLE ROW LEVEL SECURITY;
+ ALTER TABLE visits ENABLE ROW LEVEL SECURITY;
+ ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+ ALTER TABLE requests ENABLE ROW LEVEL SECURITY;
+ ALTER TABLE cargo ENABLE ROW LEVEL SECURITY;
+ ALTER TABLE cargo_events ENABLE ROW LEVEL SECURITY;
+ 
+ -- Companies policies (Admin only)
+ CREATE POLICY "Companies are viewable by authenticated users" ON companies
+     FOR SELECT TO authenticated USING (true);
+ 
+
+ 
+ 
+ -- =====================================================
+ -- FUNCTIONS AND TRIGGERS
+ -- =====================================================
+ 
+ -- Function to update updated_at timestamp
+ CREATE OR REPLACE FUNCTION update_updated_at_column()
+ RETURNS TRIGGER AS $$
+ BEGIN
+     NEW.updated_at = NOW();
+     RETURN NEW;
+ END;
+ $$ language 'plpgsql';
+ 
+ -- Apply updated_at triggers to all tables
+ CREATE TRIGGER update_companies_updated_at BEFORE UPDATE ON companies FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+ CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+ CREATE TRIGGER update_branches_updated_at BEFORE UPDATE ON branches FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+ CREATE TRIGGER update_trucks_updated_at BEFORE UPDATE ON trucks FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+ CREATE TRIGGER update_routes_updated_at BEFORE UPDATE ON routes FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+ CREATE TRIGGER update_route_stops_updated_at BEFORE UPDATE ON route_stops FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+ CREATE TRIGGER update_visits_updated_at BEFORE UPDATE ON visits FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+ CREATE TRIGGER update_tasks_updated_at BEFORE UPDATE ON tasks FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+ CREATE TRIGGER update_requests_updated_at BEFORE UPDATE ON requests FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+ CREATE TRIGGER update_cargo_updated_at BEFORE UPDATE ON cargo FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+ 
+ -- Function to generate tracking numbers
+ CREATE OR REPLACE FUNCTION generate_tracking_number(company_id_param BIGINT)
+ RETURNS TEXT AS $$
+ DECLARE
+     cargo_count INTEGER;
+     tracking_num TEXT;
+ BEGIN
+     SELECT COUNT(*) INTO cargo_count FROM cargo WHERE company_id = company_id_param;
+     tracking_num := 'TRK' || company_id_param || LPAD((cargo_count  1)::TEXT, 6, '0');
+     RETURN tracking_num;
+ END;
+ $$ LANGUAGE plpgsql;
+ 
+ -- Function to calculate distance between two GPS coordinates (Haversine formula)
+ CREATE OR REPLACE FUNCTION calculate_distance(lat1 DECIMAL, lon1 DECIMAL, lat2 DECIMAL, lon2 DECIMAL)
+ RETURNS DECIMAL AS $$
+ DECLARE
+     R DECIMAL := 6371; -- Earth's radius in kilometers
+     dLat DECIMAL;
+     dLon DECIMAL;
+     a DECIMAL;
+     c DECIMAL;
+ BEGIN
+     dLat := RADIANS(lat2 - lat1);
+     dLon := RADIANS(lon2 - lon1);
+     a := SIN(dLat/2) * SIN(dLat/2)  COS(RADIANS(lat1)) * COS(RADIANS(lat2)) * SIN(dLon/2) * SIN(dLon/2);
+     c := 2 * ATAN2(SQRT(a), SQRT(1-a));
+     RETURN R * c;
+ END;
+ $$ LANGUAGE plpgsql;
+ 
+ -- Function to cleanup old truck locations (keep last 1000 per truck)
+ CREATE OR REPLACE FUNCTION cleanup_old_truck_locations()
+ RETURNS void AS $$
+ BEGIN
+     DELETE FROM truck_locations 
+     WHERE id NOT IN (
+         SELECT id FROM (
+             SELECT id, ROW_NUMBER() OVER (PARTITION BY truck_id ORDER BY timestamp DESC) as rn
+             FROM truck_locations
+         ) t WHERE t.rn <= 1000
+     );
+ END;
+ $$ LANGUAGE plpgsql;
+ 
+ -- =====================================================
+ -- VIEWS FOR REPORTING AND DASHBOARDS
+ -- =====================================================
+ 
+ -- Company dashboard statistics
+ CREATE OR REPLACE VIEW company_dashboard_stats AS
+ SELECT 
+     c.id as company_id,
+     c.name as company_name,
+     COUNT(DISTINCT u.id) as total_users,
+     COUNT(DISTINCT CASE WHEN u.role = 'driver' THEN u.id END) as total_drivers,
+     COUNT(DISTINCT t.id) as total_trucks,
+     COUNT(DISTINCT CASE WHEN t.status = 'online' THEN t.id END) as online_trucks,
+     COUNT(DISTINCT CASE WHEN t.status = 'in_use' THEN t.id END) as trucks_in_use,
+     COUNT(DISTINCT car.id) as total_cargo,
+     COUNT(DISTINCT CASE WHEN car.status = 'in_transit' THEN car.id END) as cargo_in_transit,
+     COUNT(DISTINCT CASE WHEN car.status = 'delivered' THEN car.id END) as cargo_delivered,
+     COUNT(DISTINCT r.id) as total_routes,
+     COUNT(DISTINCT CASE WHEN r.status = 'active' THEN r.id END) as active_routes,
+     COUNT(DISTINCT v.id) as total_visits,
+     COUNT(DISTINCT CASE WHEN v.status = 'completed' THEN v.id END) as completed_visits
+ FROM companies c
+ LEFT JOIN users u ON c.id = u.company_id AND u.deleted_at IS NULL
+ LEFT JOIN trucks t ON c.id = t.company_id AND t.deleted_at IS NULL
+ LEFT JOIN cargo car ON c.id = car.company_id AND car.deleted_at IS NULL
+ LEFT JOIN routes r ON c.id = r.company_id AND r.deleted_at IS NULL
+ LEFT JOIN visits v ON c.id = v.company_id AND v.deleted_at IS NULL
+ WHERE c.deleted_at IS NULL
+ GROUP BY c.id, c.name;
+ 
+ -- Truck utilization statistics
+ CREATE OR REPLACE VIEW truck_utilization_stats AS
+ SELECT 
+     t.id as truck_id,
+     t.license_plate,
+     t.model,
+     t.status,
+     u.first_name || ' ' || u.last_name as driver_name,
+     COUNT(DISTINCT car.id) as assigned_cargo_count,
+     COUNT(DISTINCT r.id) as assigned_routes_count,
+     COUNT(DISTINCT v.id) as total_visits,
+     COUNT(DISTINCT CASE WHEN v.status = 'completed' THEN v.id END) as completed_visits,
+     COALESCE(AVG(EXTRACT(EPOCH FROM (v.end_time - v.start_time))/3600), 0) as avg_visit_duration_hours,
+     MAX(tl.timestamp) as last_location_update
+ FROM trucks t
+ LEFT JOIN users u ON t.driver_id = u.id
+ LEFT JOIN cargo car ON t.id = car.truck_id AND car.deleted_at IS NULL
+ LEFT JOIN routes r ON t.id = r.truck_id AND r.deleted_at IS NULL
+ LEFT JOIN visits v ON t.id = v.truck_id AND v.deleted_at IS NULL
+ LEFT JOIN truck_locations tl ON t.id = tl.truck_id
+ WHERE t.deleted_at IS NULL
+ GROUP BY t.id, t.license_plate, t.model, t.status, u.first_name, u.last_name;
+ 
+ -- Cargo tracking summary
+ CREATE OR REPLACE VIEW cargo_tracking_summary AS
+ SELECT 
+     c.id as cargo_id,
+     c.tracking_number,
+     c.title,
+     c.status,
+     c.type,
+     c.priority,
+     c.origin_address,
+     c.destination_address,
+     c.estimated_delivery,
+     c.actual_delivery,
+     t.license_plate as assigned_truck,
+     u.first_name || ' ' || u.last_name as driver_name,
+     c.current_latitude,
+     c.current_longitude,
+     c.last_updated,
+     COUNT(ce.id) as total_events,
+     MAX(ce.timestamp) as last_event_time
+ FROM cargo c
+ LEFT JOIN trucks t ON c.truck_id = t.id
+ LEFT JOIN users u ON t.driver_id = u.id
+ LEFT JOIN cargo_events ce ON c.id = ce.cargo_id
+ WHERE c.deleted_at IS NULL
+ GROUP BY c.id, c.tracking_number, c.title, c.status, c.type, c.priority, 
+          c.origin_address, c.destination_address, c.estimated_delivery, 
+          c.actual_delivery, t.license_plate, u.first_name, u.last_name,
+          c.current_latitude, c.current_longitude, c.last_updated;
+ 
+ -- =====================================================
+ -- SAMPLE DATA FOR TESTING
+ -- =====================================================
+ 
+ -- Insert sample company
+ INSERT INTO companies (name, address, phone, email, license, is_active) 
+ VALUES ('Demo Logistics Inc', '123 Main St, City, State 12345', '1-555-0123', 'info@demologistics.com', 'DL001', true)
+ ON CONFLICT (license) DO NOTHING;
+ 
+ -- Insert sample admin user
+ INSERT INTO users (email, password_hash, first_name, last_name, role, company_id, is_active)
+ SELECT 'admin@demologistics.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin', 'User', 'admin', c.id, true
+ FROM companies c WHERE c.license = 'DL001'
+ ON CONFLICT (email) DO NOTHING;
+ 
+ -- Insert sample branch
+ INSERT INTO branches (company_id, name, address, phone, email, is_active)
+ SELECT c.id, 'Main Branch', '123 Main St, City, State 12345', '1-555-0123', 'main@demologistics.com', true
+ FROM companies c WHERE c.license = 'DL001'
+ ON CONFLICT DO NOTHING;
+ 
+ COMMIT;
