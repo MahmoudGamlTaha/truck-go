@@ -36,7 +36,7 @@ func (s *AuthService) Register(req models.RegisterRequest) (*models.User, error)
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		CompanyID: req.CompanyID,
-		Role:      models.UserRole("draft"),
+		Role:      models.UserRole("visitor"),
 	}
 
 	err = s.userRepo.Create(user)

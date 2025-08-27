@@ -283,7 +283,7 @@ func (h *CargoHandler) UnassignCargoFromTruck(c *gin.Context) {
 // @Param truck_id path int true "Truck ID"
 // @Success 200 {array} models.Cargo
 // @Security BearerAuth
-// @Router /trucks/{truck_id}/cargo [get]
+// @Router /cargo/trucks/{truck_id}/cargo [get]
 func (h *CargoHandler) GetCargosByTruck(c *gin.Context) {
 	companyID := c.MustGet("company_id").(uint)
 	truckID, _ := strconv.ParseUint(c.Param("truck_id"), 10, 32)
@@ -475,7 +475,7 @@ func (h *CargoHandler) GetCargoRoute(c *gin.Context) {
 // @Param radius query float64 false "Search radius in kilometers" default(10)
 // @Success 200 {array} models.Cargo
 // @Security BearerAuth
-// @Router /trucks/{truck_id}/nearby-cargo [get]
+// @Router /cargo/trucks/{truck_id}/nearby-cargo [get]
 func (h *CargoHandler) GetNearbyCargoForTruck(c *gin.Context) {
 	companyID := c.MustGet("company_id").(uint)
 	truckID, _ := strconv.ParseUint(c.Param("truck_id"), 10, 32)

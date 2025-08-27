@@ -1,0 +1,3034 @@
+basePath: /api/v1
+definitions:
+  models.AssignCargoRequest:
+    properties:
+      truck_id:
+        type: integer
+    required:
+    - truck_id
+    type: object
+  models.Branch:
+    properties:
+      address:
+        type: string
+      company:
+        $ref: '#/definitions/models.Company'
+      company_id:
+        type: integer
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      manager:
+        $ref: '#/definitions/models.User'
+      manager_id:
+        type: integer
+      name:
+        type: string
+      phone:
+        type: string
+      trucks:
+        items:
+          $ref: '#/definitions/models.Truck'
+        type: array
+      updated_at:
+        type: string
+      users:
+        items:
+          $ref: '#/definitions/models.User'
+        type: array
+    type: object
+  models.Cargo:
+    properties:
+      actual_delivery:
+        type: string
+      actual_pickup:
+        type: string
+      assigned_at:
+        type: string
+      assigned_by:
+        description: Assignment details
+        type: integer
+      assigned_by_user:
+        $ref: '#/definitions/models.User'
+      cargo_events:
+        description: Tracking
+        items:
+          $ref: '#/definitions/models.CargoEvent'
+        type: array
+      company:
+        $ref: '#/definitions/models.Company'
+      company_id:
+        type: integer
+      created_at:
+        type: string
+      currency:
+        type: string
+      current_latitude:
+        description: Real-time tracking
+        type: number
+      current_location:
+        type: string
+      current_longitude:
+        type: number
+      delivery_time:
+        type: string
+      description:
+        type: string
+      destination_address:
+        description: Destination details
+        type: string
+      destination_contact:
+        type: string
+      destination_latitude:
+        type: number
+      destination_longitude:
+        type: number
+      destination_phone:
+        type: string
+      estimated_delivery:
+        type: string
+      id:
+        type: integer
+      instructions:
+        description: Special instructions
+        type: string
+      last_updated:
+        type: string
+      origin_address:
+        description: Origin details
+        type: string
+      origin_contact:
+        type: string
+      origin_latitude:
+        type: number
+      origin_longitude:
+        type: number
+      origin_phone:
+        type: string
+      pickup_time:
+        description: Timing
+        type: string
+      priority:
+        $ref: '#/definitions/models.CargoPriority'
+      special_handling:
+        type: boolean
+      status:
+        $ref: '#/definitions/models.CargoStatus'
+      title:
+        type: string
+      tracking_number:
+        type: string
+      truck:
+        $ref: '#/definitions/models.Truck'
+      truck_id:
+        type: integer
+      type:
+        $ref: '#/definitions/models.CargoType'
+      updated_at:
+        type: string
+      value:
+        description: monetary value
+        type: number
+      volume:
+        description: in cubic meters
+        type: number
+      weight:
+        description: in kg
+        type: number
+    type: object
+  models.CargoEvent:
+    properties:
+      cargo:
+        $ref: '#/definitions/models.Cargo'
+      cargo_id:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      event_type:
+        description: pickup, delivery, status_change, location_update
+        type: string
+      id:
+        type: integer
+      latitude:
+        type: number
+      location:
+        type: string
+      longitude:
+        type: number
+      timestamp:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        type: integer
+    type: object
+  models.CargoPriority:
+    enum:
+    - low
+    - medium
+    - high
+    - urgent
+    type: string
+    x-enum-varnames:
+    - CargoPriorityLow
+    - CargoPriorityMedium
+    - CargoPriorityHigh
+    - CargoPriorityUrgent
+  models.CargoStatus:
+    enum:
+    - pending
+    - assigned
+    - in_transit
+    - delivered
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - CargoStatusPending
+    - CargoStatusAssigned
+    - CargoStatusInTransit
+    - CargoStatusDelivered
+    - CargoStatusCancelled
+  models.CargoTrackingResponse:
+    properties:
+      cargo:
+        $ref: '#/definitions/models.Cargo'
+      current_status:
+        type: string
+      estimated_eta:
+        type: string
+      last_update:
+        type: string
+      progress:
+        description: 0-100%
+        type: number
+      recent_events:
+        items:
+          $ref: '#/definitions/models.CargoEvent'
+        type: array
+      truck_location:
+        $ref: '#/definitions/models.TruckLocation'
+    type: object
+  models.CargoType:
+    enum:
+    - general
+    - fragile
+    - hazardous
+    - perishable
+    - liquid
+    - oversized
+    type: string
+    x-enum-varnames:
+    - CargoTypeGeneral
+    - CargoTypeFragile
+    - CargoTypeHazardous
+    - CargoTypePerishable
+    - CargoTypeLiquid
+    - CargoTypeOversized
+  models.Company:
+    properties:
+      address:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      license:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      trucks:
+        items:
+          $ref: '#/definitions/models.Truck'
+        type: array
+      updated_at:
+        type: string
+      users:
+        items:
+          $ref: '#/definitions/models.User'
+        type: array
+    type: object
+  models.CreateBranchRequest:
+    properties:
+      address:
+        type: string
+      email:
+        type: string
+      manager_id:
+        type: integer
+      name:
+        type: string
+      phone:
+        type: string
+    required:
+    - name
+    type: object
+  models.CreateCargoEventRequest:
+    properties:
+      description:
+        type: string
+      event_type:
+        type: string
+      latitude:
+        type: number
+      location:
+        type: string
+      longitude:
+        type: number
+    required:
+    - event_type
+    type: object
+  models.CreateCargoRequest:
+    properties:
+      currency:
+        type: string
+      delivery_time:
+        type: string
+      description:
+        type: string
+      destination_address:
+        type: string
+      destination_contact:
+        type: string
+      destination_latitude:
+        type: number
+      destination_longitude:
+        type: number
+      destination_phone:
+        type: string
+      estimated_delivery:
+        type: string
+      instructions:
+        type: string
+      origin_address:
+        type: string
+      origin_contact:
+        type: string
+      origin_latitude:
+        type: number
+      origin_longitude:
+        type: number
+      origin_phone:
+        type: string
+      pickup_time:
+        type: string
+      priority:
+        $ref: '#/definitions/models.CargoPriority'
+      special_handling:
+        type: boolean
+      title:
+        type: string
+      type:
+        $ref: '#/definitions/models.CargoType'
+      value:
+        type: number
+      volume:
+        type: number
+      weight:
+        type: number
+    required:
+    - destination_address
+    - origin_address
+    - title
+    - weight
+    type: object
+  models.CreateCompanyRequest:
+    properties:
+      address:
+        type: string
+      email:
+        type: string
+      license:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    required:
+    - license
+    - name
+    type: object
+  models.CreateRequestRequest:
+    properties:
+      description:
+        type: string
+      title:
+        type: string
+      truck_id:
+        type: integer
+      type:
+        $ref: '#/definitions/models.RequestType'
+    required:
+    - title
+    - type
+    type: object
+  models.CreateRouteRequest:
+    properties:
+      branch_id:
+        type: integer
+      description:
+        type: string
+      end_time:
+        type: string
+      name:
+        type: string
+      start_time:
+        type: string
+    required:
+    - name
+    type: object
+  models.CreateRouteStopRequest:
+    properties:
+      address:
+        type: string
+      contact_name:
+        type: string
+      contact_phone:
+        type: string
+      estimated_arrival:
+        type: string
+      instructions:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      stop_order:
+        type: integer
+    required:
+    - address
+    - stop_order
+    type: object
+  models.CreateTaskRequest:
+    properties:
+      description:
+        type: string
+      title:
+        type: string
+      visit_id:
+        type: integer
+    required:
+    - title
+    - visit_id
+    type: object
+  models.CreateTruckRequest:
+    properties:
+      branch_id:
+        type: integer
+      color:
+        type: string
+      driver_id:
+        type: integer
+      license_plate:
+        type: string
+      model:
+        type: string
+      year:
+        type: integer
+    required:
+    - license_plate
+    - model
+    - year
+    type: object
+  models.CreateUserRequest:
+    properties:
+      branch_id:
+        type: integer
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      role:
+        $ref: '#/definitions/models.UserRole'
+      truck_id:
+        type: integer
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    - role
+    type: object
+  models.CreateVisitRequest:
+    properties:
+      address:
+        type: string
+      customer_name:
+        type: string
+      driver_id:
+        type: integer
+      latitude:
+        type: number
+      longitude:
+        type: number
+      notes:
+        type: string
+      truck_id:
+        type: integer
+    required:
+    - address
+    - customer_name
+    - driver_id
+    - truck_id
+    type: object
+  models.LocationUpdateRequest:
+    properties:
+      heading:
+        type: number
+      latitude:
+        type: number
+      longitude:
+        type: number
+      speed:
+        type: number
+    required:
+    - latitude
+    - longitude
+    type: object
+  models.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.LoginResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+    type: object
+  models.RegisterRequest:
+    properties:
+      branch_id:
+        type: integer
+      company_id:
+        type: integer
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    type: object
+  models.Request:
+    properties:
+      accepted_at:
+        type: string
+      accepted_by:
+        type: integer
+      accepted_by_user:
+        $ref: '#/definitions/models.User'
+      company:
+        $ref: '#/definitions/models.Company'
+      company_id:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      status:
+        $ref: '#/definitions/models.RequestStatus'
+      terminated_at:
+        type: string
+      terminated_by:
+        type: integer
+      terminated_by_user:
+        $ref: '#/definitions/models.User'
+      termination_reason:
+        type: string
+      title:
+        type: string
+      truck:
+        $ref: '#/definitions/models.Truck'
+      truck_id:
+        type: integer
+      type:
+        $ref: '#/definitions/models.RequestType'
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        type: integer
+    type: object
+  models.RequestStatus:
+    enum:
+    - pending
+    - accepted
+    - terminated
+    type: string
+    x-enum-varnames:
+    - RequestStatusPending
+    - RequestStatusAccepted
+    - RequestStatusTerminated
+  models.RequestType:
+    enum:
+    - truck_assignment
+    - maintenance
+    - leave
+    - other
+    type: string
+    x-enum-varnames:
+    - RequestTypeTruckAssignment
+    - RequestTypeMaintenace
+    - RequestTypeLeave
+    - RequestTypeOther
+  models.Route:
+    properties:
+      approved_at:
+        type: string
+      approved_by:
+        type: integer
+      approved_by_user:
+        $ref: '#/definitions/models.User'
+      branch:
+        $ref: '#/definitions/models.Branch'
+      branch_id:
+        type: integer
+      company:
+        $ref: '#/definitions/models.Company'
+      company_id:
+        type: integer
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      created_by_user:
+        $ref: '#/definitions/models.User'
+      description:
+        type: string
+      driver:
+        $ref: '#/definitions/models.User'
+      driver_id:
+        type: integer
+      end_time:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      route_stops:
+        items:
+          $ref: '#/definitions/models.RouteStop'
+        type: array
+      start_time:
+        type: string
+      status:
+        $ref: '#/definitions/models.RouteStatus'
+      truck:
+        $ref: '#/definitions/models.Truck'
+      truck_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.RouteStatus:
+    enum:
+    - draft
+    - active
+    - completed
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - RouteStatusDraft
+    - RouteStatusActive
+    - RouteStatusCompleted
+    - RouteStatusCancelled
+  models.RouteStop:
+    properties:
+      actual_arrival:
+        type: string
+      address:
+        type: string
+      completed_at:
+        type: string
+      contact_name:
+        type: string
+      contact_phone:
+        type: string
+      created_at:
+        type: string
+      estimated_arrival:
+        type: string
+      id:
+        type: integer
+      instructions:
+        type: string
+      is_completed:
+        type: boolean
+      latitude:
+        type: number
+      longitude:
+        type: number
+      notes:
+        type: string
+      route:
+        $ref: '#/definitions/models.Route'
+      route_id:
+        type: integer
+      stop_order:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.Task:
+    properties:
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      is_completed:
+        type: boolean
+      title:
+        type: string
+      updated_at:
+        type: string
+      visit:
+        $ref: '#/definitions/models.Visit'
+      visit_id:
+        type: integer
+    type: object
+  models.TerminateRequestRequest:
+    properties:
+      reason:
+        type: string
+    required:
+    - reason
+    type: object
+  models.Truck:
+    properties:
+      approved_at:
+        type: string
+      approved_by:
+        type: integer
+      approved_by_user:
+        $ref: '#/definitions/models.User'
+      branch:
+        $ref: '#/definitions/models.Branch'
+      branch_id:
+        type: integer
+      color:
+        type: string
+      company:
+        $ref: '#/definitions/models.Company'
+      company_id:
+        type: integer
+      created_at:
+        type: string
+      driver:
+        $ref: '#/definitions/models.User'
+      driver_id:
+        type: integer
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      is_approved:
+        type: boolean
+      last_location:
+        $ref: '#/definitions/models.TruckLocation'
+      license_plate:
+        type: string
+      locations:
+        items:
+          $ref: '#/definitions/models.TruckLocation'
+        type: array
+      model:
+        type: string
+      routes:
+        items:
+          $ref: '#/definitions/models.Route'
+        type: array
+      status:
+        $ref: '#/definitions/models.TruckStatus'
+      updated_at:
+        type: string
+      visits:
+        items:
+          $ref: '#/definitions/models.Visit'
+        type: array
+      year:
+        type: integer
+    type: object
+  models.TruckLocation:
+    properties:
+      created_at:
+        type: string
+      heading:
+        type: number
+      id:
+        type: integer
+      latitude:
+        type: number
+      longitude:
+        type: number
+      speed:
+        type: number
+      timestamp:
+        type: string
+      truck:
+        $ref: '#/definitions/models.Truck'
+      truck_id:
+        type: integer
+    type: object
+  models.TruckStatus:
+    enum:
+    - online
+    - offline
+    - in_use
+    - maintenance
+    type: string
+    x-enum-varnames:
+    - TruckStatusOnline
+    - TruckStatusOffline
+    - TruckStatusInUse
+    - TruckStatusMaintenance
+  models.UpdateBranchRequest:
+    properties:
+      address:
+        type: string
+      email:
+        type: string
+      is_active:
+        type: boolean
+      manager_id:
+        type: integer
+      name:
+        type: string
+      phone:
+        type: string
+    type: object
+  models.UpdateCargoLocationRequest:
+    properties:
+      heading:
+        type: number
+      latitude:
+        type: number
+      location:
+        type: string
+      longitude:
+        type: number
+      speed:
+        type: number
+    required:
+    - latitude
+    - longitude
+    type: object
+  models.UpdateCargoRequest:
+    properties:
+      currency:
+        type: string
+      delivery_time:
+        type: string
+      description:
+        type: string
+      destination_address:
+        type: string
+      destination_contact:
+        type: string
+      destination_latitude:
+        type: number
+      destination_longitude:
+        type: number
+      destination_phone:
+        type: string
+      estimated_delivery:
+        type: string
+      instructions:
+        type: string
+      origin_address:
+        type: string
+      origin_contact:
+        type: string
+      origin_latitude:
+        type: number
+      origin_longitude:
+        type: number
+      origin_phone:
+        type: string
+      pickup_time:
+        type: string
+      priority:
+        $ref: '#/definitions/models.CargoPriority'
+      special_handling:
+        type: boolean
+      status:
+        $ref: '#/definitions/models.CargoStatus'
+      title:
+        type: string
+      type:
+        $ref: '#/definitions/models.CargoType'
+      value:
+        type: number
+      volume:
+        type: number
+      weight:
+        type: number
+    type: object
+  models.UpdateCompanyRequest:
+    properties:
+      address:
+        type: string
+      email:
+        type: string
+      license:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    type: object
+  models.UpdateRouteRequest:
+    properties:
+      branch_id:
+        type: integer
+      description:
+        type: string
+      driver_id:
+        type: integer
+      end_time:
+        type: string
+      name:
+        type: string
+      start_time:
+        type: string
+      status:
+        $ref: '#/definitions/models.RouteStatus'
+      truck_id:
+        type: integer
+    type: object
+  models.UpdateTruckRequest:
+    properties:
+      branch_id:
+        type: integer
+      color:
+        type: string
+      driver_id:
+        type: integer
+      is_approved:
+        type: boolean
+      license_plate:
+        type: string
+      model:
+        type: string
+      status:
+        $ref: '#/definitions/models.TruckStatus'
+      year:
+        type: integer
+    type: object
+  models.UpdateUserRequest:
+    properties:
+      branch_id:
+        type: integer
+      first_name:
+        type: string
+      is_active:
+        type: boolean
+      last_name:
+        type: string
+      role:
+        $ref: '#/definitions/models.UserRole'
+      truck_id:
+        type: integer
+    type: object
+  models.User:
+    properties:
+      branch:
+        $ref: '#/definitions/models.Branch'
+      branch_id:
+        type: integer
+      company:
+        $ref: '#/definitions/models.Company'
+      company_id:
+        type: integer
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      last_name:
+        type: string
+      role:
+        $ref: '#/definitions/models.UserRole'
+      truck:
+        $ref: '#/definitions/models.Truck'
+      truck_id:
+        description: For drivers assigned to specific truck
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.UserRole:
+    enum:
+    - admin
+    - assignee
+    - driver
+    - draft
+    type: string
+    x-enum-varnames:
+    - RoleAdmin
+    - RoleAssignee
+    - RoleDriver
+    - RoleDraft
+  models.Visit:
+    properties:
+      address:
+        type: string
+      company:
+        $ref: '#/definitions/models.Company'
+      company_id:
+        type: integer
+      created_at:
+        type: string
+      customer_name:
+        type: string
+      driver:
+        $ref: '#/definitions/models.User'
+      driver_id:
+        type: integer
+      end_time:
+        type: string
+      id:
+        type: integer
+      latitude:
+        type: number
+      longitude:
+        type: number
+      notes:
+        type: string
+      start_time:
+        type: string
+      status:
+        $ref: '#/definitions/models.VisitStatus'
+      tasks:
+        items:
+          $ref: '#/definitions/models.Task'
+        type: array
+      truck:
+        $ref: '#/definitions/models.Truck'
+      truck_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.VisitStatus:
+    enum:
+    - pending
+    - in_progress
+    - completed
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - VisitStatusPending
+    - VisitStatusInProgress
+    - VisitStatusCompleted
+    - VisitStatusCancelled
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: Multi-tenant truck management system with real-time tracking
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Truck Management API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT token
+      parameters:
+      - description: User login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login user
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account
+      parameters:
+      - description: User registration data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - auth
+  /branches:
+    get:
+      description: Get all branches for the company
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Branch'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get all branches
+      tags:
+      - branches
+    post:
+      consumes:
+      - application/json
+      description: Create a new branch for the company (Admin only)
+      parameters:
+      - description: Branch data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateBranchRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Branch'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new branch
+      tags:
+      - branches
+  /branches/{id}:
+    delete:
+      description: Delete a branch (Admin only)
+      parameters:
+      - description: Branch ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a branch
+      tags:
+      - branches
+    get:
+      description: Retrieve a specific branch by its ID
+      parameters:
+      - description: Branch ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Branch'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get a branch by ID
+      tags:
+      - branches
+    put:
+      consumes:
+      - application/json
+      description: Update branch information (Admin only)
+      parameters:
+      - description: Branch ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated branch data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateBranchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Branch'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a branch
+      tags:
+      - branches
+  /cargo:
+    get:
+      description: Get all cargo shipments for the company with filtering options
+      parameters:
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      - description: Filter by cargo type
+        in: query
+        name: type
+        type: string
+      - description: Filter by priority
+        in: query
+        name: priority
+        type: string
+      - description: Filter by truck ID
+        in: query
+        name: truck_id
+        type: integer
+      - description: Filter assigned/unassigned cargo
+        in: query
+        name: assigned
+        type: boolean
+      - description: Search in title, tracking number, or description
+        in: query
+        name: search
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get cargo list
+      tags:
+      - cargo
+    post:
+      consumes:
+      - application/json
+      description: Add a new cargo shipment to the system
+      parameters:
+      - description: Cargo data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateCargoRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Cargo'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new cargo
+      tags:
+      - cargo
+  /cargo/{id}:
+    delete:
+      description: Remove a cargo shipment from the system
+      parameters:
+      - description: Cargo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a cargo
+      tags:
+      - cargo
+    get:
+      description: Retrieve a specific cargo shipment by its ID
+      parameters:
+      - description: Cargo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Cargo'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get a cargo by ID
+      tags:
+      - cargo
+    put:
+      consumes:
+      - application/json
+      description: Update cargo shipment information
+      parameters:
+      - description: Cargo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated cargo data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateCargoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Cargo'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a cargo
+      tags:
+      - cargo
+  /cargo/{id}/assign:
+    post:
+      consumes:
+      - application/json
+      description: Assign a cargo shipment to a specific truck
+      parameters:
+      - description: Cargo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Assignment data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.AssignCargoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Cargo'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Assign cargo to truck
+      tags:
+      - cargo
+  /cargo/{id}/events:
+    get:
+      description: Get tracking history for a specific cargo
+      parameters:
+      - description: Cargo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CargoEvent'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get cargo events
+      tags:
+      - cargo
+    post:
+      consumes:
+      - application/json
+      description: Add a new event to cargo tracking history
+      parameters:
+      - description: Cargo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Event data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateCargoEventRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.CargoEvent'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create cargo event
+      tags:
+      - cargo
+  /cargo/{id}/location:
+    post:
+      consumes:
+      - application/json
+      description: Update the current GPS location of cargo during transit
+      parameters:
+      - description: Cargo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Location data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateCargoLocationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Cargo'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update cargo real-time location
+      tags:
+      - cargo
+  /cargo/{id}/route:
+    get:
+      description: Get the complete route history with GPS coordinates
+      parameters:
+      - description: Cargo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CargoEvent'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get cargo route history
+      tags:
+      - cargo
+  /cargo/{id}/unassign:
+    post:
+      description: Remove cargo assignment from truck
+      parameters:
+      - description: Cargo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Cargo'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Unassign cargo from truck
+      tags:
+      - cargo
+  /cargo/track/{tracking_number}:
+    get:
+      description: Retrieve cargo information using tracking number
+      parameters:
+      - description: Tracking Number
+        in: path
+        name: tracking_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Cargo'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get cargo by tracking number
+      tags:
+      - cargo
+  /cargo/track/{tracking_number}/details:
+    get:
+      description: Get comprehensive tracking information including progress and ETA
+      parameters:
+      - description: Tracking Number
+        in: path
+        name: tracking_number
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CargoTrackingResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get detailed cargo tracking info
+      tags:
+      - cargo
+  /cargo/trucks/{truck_id}/cargo:
+    get:
+      description: Get all cargo shipments assigned to a specific truck
+      parameters:
+      - description: Truck ID
+        in: path
+        name: truck_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Cargo'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get cargo assigned to truck
+      tags:
+      - cargo
+  /cargo/trucks/{truck_id}/nearby-cargo:
+    get:
+      description: Get cargo near truck's current location for efficient pickup routing
+      parameters:
+      - description: Truck ID
+        in: path
+        name: truck_id
+        required: true
+        type: integer
+      - default: 10
+        description: Search radius in kilometers
+        format: float64
+        in: query
+        name: radius
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Cargo'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get nearby cargo for pickup
+      tags:
+      - cargo
+  /cargo/unassigned:
+    get:
+      description: Get all cargo that hasn't been assigned to any truck
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Cargo'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get unassigned cargo
+      tags:
+      - cargo
+  /companies:
+    get:
+      description: Retrieve all companies
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Company'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get all companies
+      tags:
+      - companies
+    post:
+      consumes:
+      - application/json
+      description: Create a new company for multi-tenant system
+      parameters:
+      - description: Company data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateCompanyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Company'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new company
+      tags:
+      - companies
+  /companies/{id}:
+    delete:
+      description: Delete a company and all associated data
+      parameters:
+      - description: Company ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a company
+      tags:
+      - companies
+    get:
+      description: Retrieve a specific company by its ID
+      parameters:
+      - description: Company ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Company'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get a company by ID
+      tags:
+      - companies
+    put:
+      consumes:
+      - application/json
+      description: Update company information
+      parameters:
+      - description: Company ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated company data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateCompanyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Company'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a company
+      tags:
+      - companies
+  /requests:
+    get:
+      description: Get all requests for the company
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Request'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get requests
+      tags:
+      - requests
+    post:
+      consumes:
+      - application/json
+      description: Submit a new request (truck assignment, maintenance, etc.)
+      parameters:
+      - description: Request data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateRequestRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Request'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new request
+      tags:
+      - requests
+  /requests/{id}/accept:
+    put:
+      description: Accept a pending request (assignee only)
+      parameters:
+      - description: Request ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Request'
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Accept a request
+      tags:
+      - requests
+  /requests/{id}/terminate:
+    put:
+      consumes:
+      - application/json
+      description: Terminate a request with a reason (assignee only)
+      parameters:
+      - description: Request ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Termination reason
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.TerminateRequestRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Request'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Terminate a request
+      tags:
+      - requests
+  /route-stops/{id}/complete:
+    put:
+      consumes:
+      - application/json
+      description: Mark a route stop as completed (Driver only)
+      parameters:
+      - description: Route Stop ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Completion notes
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RouteStop'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Complete a route stop
+      tags:
+      - routes
+  /routes:
+    get:
+      description: Get all routes (drivers see only their routes)
+      parameters:
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      - description: Filter by truck ID
+        in: query
+        name: truck_id
+        type: integer
+      - description: Filter by driver ID
+        in: query
+        name: driver_id
+        type: integer
+      - description: Filter by branch ID
+        in: query
+        name: branch_id
+        type: integer
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get routes
+      tags:
+      - routes
+    post:
+      consumes:
+      - application/json
+      description: Create a new route (Assignee only)
+      parameters:
+      - description: Route data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateRouteRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Route'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new route
+      tags:
+      - routes
+  /routes/{id}:
+    delete:
+      description: Delete a route (Assignee only)
+      parameters:
+      - description: Route ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a route
+      tags:
+      - routes
+    get:
+      description: Retrieve a specific route by its ID
+      parameters:
+      - description: Route ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Route'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get a route by ID
+      tags:
+      - routes
+    put:
+      consumes:
+      - application/json
+      description: Update route information (Assignee only)
+      parameters:
+      - description: Route ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated route data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateRouteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Route'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a route
+      tags:
+      - routes
+  /routes/{id}/approve:
+    put:
+      description: Approve a route and make it active (Assignee only)
+      parameters:
+      - description: Route ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Route'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Approve a route
+      tags:
+      - routes
+  /routes/{id}/stops:
+    get:
+      description: Get all stops for a route
+      parameters:
+      - description: Route ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.RouteStop'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get route stops
+      tags:
+      - routes
+    post:
+      consumes:
+      - application/json
+      description: Add a stop to a route (Assignee only)
+      parameters:
+      - description: Route ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Route stop data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateRouteStopRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.RouteStop'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a route stop
+      tags:
+      - routes
+  /tasks:
+    get:
+      description: Get all tasks for a specific visit
+      parameters:
+      - description: Visit ID
+        in: query
+        name: visit_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Task'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get tasks by visit
+      tags:
+      - tasks
+    post:
+      consumes:
+      - application/json
+      description: Add a new task to a visit
+      parameters:
+      - description: Task data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Task'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new task
+      tags:
+      - tasks
+  /tasks/{id}:
+    get:
+      description: Retrieve a specific task by its ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Task'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get a task by ID
+      tags:
+      - tasks
+    put:
+      consumes:
+      - application/json
+      description: Update task information
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated task data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Task'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a task
+      tags:
+      - tasks
+  /tasks/{id}/complete:
+    put:
+      description: Mark a task as completed
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Task'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Complete a task
+      tags:
+      - tasks
+  /trucks:
+    get:
+      description: Get all trucks for the company with filtering options
+      parameters:
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      - description: Filter by branch ID
+        in: query
+        name: branch_id
+        type: integer
+      - description: Filter by driver ID
+        in: query
+        name: driver_id
+        type: integer
+      - description: Filter by model
+        in: query
+        name: model
+        type: string
+      - description: Filter online trucks only
+        in: query
+        name: online
+        type: boolean
+      - description: Filter approved trucks only
+        in: query
+        name: approved
+        type: boolean
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get trucks
+      tags:
+      - trucks
+    post:
+      consumes:
+      - application/json
+      description: Add a new truck to the company fleet
+      parameters:
+      - description: Truck data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateTruckRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Truck'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new truck
+      tags:
+      - trucks
+  /trucks/{id}:
+    delete:
+      description: Remove a truck from the fleet
+      parameters:
+      - description: Truck ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a truck
+      tags:
+      - trucks
+    get:
+      description: Retrieve a specific truck by its ID
+      parameters:
+      - description: Truck ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Truck'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get a truck by ID
+      tags:
+      - trucks
+    put:
+      consumes:
+      - application/json
+      description: Update truck information
+      parameters:
+      - description: Truck ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated truck data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateTruckRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Truck'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a truck
+      tags:
+      - trucks
+  /trucks/{id}/approve:
+    put:
+      description: Approve a truck for operation (Assignee only)
+      parameters:
+      - description: Truck ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Truck'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Approve a truck
+      tags:
+      - trucks
+  /trucks/{id}/location:
+    post:
+      consumes:
+      - application/json
+      description: Update the real-time location of a truck
+      parameters:
+      - description: Truck ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Location data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.LocationUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update truck location
+      tags:
+      - trucks
+  /trucks/my-truck:
+    get:
+      description: Get the truck assigned to the current driver
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Truck'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get driver's assigned truck
+      tags:
+      - trucks
+  /trucks/online:
+    get:
+      description: Get all trucks that are currently online
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Truck'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get online trucks
+      tags:
+      - trucks
+  /users:
+    get:
+      description: Get all users for the company (Admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get all users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user (Admin only)
+      parameters:
+      - description: User data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new user
+      tags:
+      - users
+  /users/{driver_id}/assign-truck:
+    post:
+      consumes:
+      - application/json
+      description: Assign a truck to a driver (Admin only)
+      parameters:
+      - description: Driver ID
+        in: path
+        name: driver_id
+        required: true
+        type: integer
+      - description: Truck assignment data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Assign truck to driver
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      description: Delete a user (Admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a user
+      tags:
+      - users
+    get:
+      description: Retrieve a specific user by its ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get a user by ID
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update user information (Admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated user data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a user
+      tags:
+      - users
+  /users/drivers:
+    get:
+      description: Get all drivers for the company
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get all drivers
+      tags:
+      - users
+  /visits:
+    get:
+      description: Get all visits for the company
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Visit'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Get visits
+      tags:
+      - visits
+    post:
+      consumes:
+      - application/json
+      description: Create a new customer visit
+      parameters:
+      - description: Visit data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateVisitRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Visit'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new visit
+      tags:
+      - visits
+  /visits/{id}:
+    get:
+      description: Retrieve a specific visit by its ID
+      parameters:
+      - description: Visit ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Visit'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get a visit by ID
+      tags:
+      - visits
+    put:
+      consumes:
+      - application/json
+      description: Update the status of a visit
+      parameters:
+      - description: Visit ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: New status
+        enum:
+        - pending
+        - in_progress
+        - completed
+        - cancelled
+        in: query
+        name: status
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Visit'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update visit status
+      tags:
+      - visits
+  /ws:
+    get:
+      description: Establish WebSocket connection for real-time updates
+      responses:
+        "101":
+          description: Switching Protocols
+      security:
+      - BearerAuth: []
+      summary: WebSocket connection
+      tags:
+      - websocket
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
