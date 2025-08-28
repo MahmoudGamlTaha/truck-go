@@ -15,6 +15,10 @@ class AuthService {
             body: registrationData
         });
     }
+
+    async getCurrentUser() {
+        return JSON.parse(localStorage.getItem('user'));
+    }
 }
 
 export const authService = new AuthService();

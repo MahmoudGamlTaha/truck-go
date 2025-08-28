@@ -163,12 +163,32 @@ export const AuthProvider = ({ children }) => {
         setCompany(null);
         setSubscription(null);
         return { success: true, data: response };
-      } else {
-        return { 
-          success: false, 
-          error: response.message || 'Registration failed. Please try again.' 
+      }
+
+      // Backend register does not return a token; attempt auto-login
+      if (response && (response.id || response.email)) {
+        const { email, password } = registrationData?.user || {};
+        if (email && password) {
+          const loginRes = await authService.login({ email, password });
+          if (loginRes && loginRes.token) {
+            apiService.setToken(loginRes.token);
+            setToken(loginRes.token);
+            setUser(loginRes.user);
+            setCompany(null);
+            setSubscription(null);
+            return { success: true, data: loginRes };
+          }
+        }
+        return {
+          success: false,
+          error: 'Registration succeeded, but automatic login failed. Please log in with your credentials.'
         };
       }
+
+      return { 
+        success: false, 
+        error: (response && response.message) || 'Registration failed. Please try again.' 
+      };
     } catch (error) {
       console.error('Registration error:', error);
       return { 
@@ -183,7 +203,9 @@ export const AuthProvider = ({ children }) => {
     setUser(prev => ({ ...prev, ...profileData }));
     return { success: true };
   };
-
+  const getCurrentUser = async () => {
+    return JSON.parse(localStorage.getItem('user'));
+  };
   const value = {
     user,
     company,
@@ -193,6 +215,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     register,
     updateProfile,
+    getCurrentUser,
     isAuthenticated: !!user,
     isAdmin: user?.role === UserRole.ADMIN,
     isAssignee: user?.role === UserRole.ASSIGNEE,
